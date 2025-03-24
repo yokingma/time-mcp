@@ -1,4 +1,5 @@
 # 🚀 Time MCP Server: Giving LLMs Time Awareness Capabilities
+[![smithery badge](https://smithery.ai/badge/@yokingma/time-mcp)](https://smithery.ai/server/@yokingma/time-mcp)
 
 A Model Context Protocol (MCP) server implementation that allows LLMs to have time awareness capabilities.
 
@@ -16,13 +17,21 @@ A Model Context Protocol (MCP) server implementation that allows LLMs to have ti
 
 ## Installation
 
+### Installing via Smithery
+
+To install time-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@yokingma/time-mcp):
+
+```bash
+npx -y @smithery/cli install @yokingma/time-mcp --client claude
+```
+
+### Manually install (Optional)
 ```shell
-# Manually install (Optional)
 npm install -g time-mcp
 ```
 
+### using npx
 ```shell
-# using npx
 npx -y time-mcp
 ```
 
