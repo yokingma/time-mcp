@@ -28,7 +28,7 @@ dayjs.extend(isoWeek);
 function getCurrentTime(format: string, timezone?: string) {
   const utcTime = dayjs.utc();
   const localTimezone = timezone ?? dayjs.tz.guess();
-  const localTime = dayjs().tz(localTimezone);
+  const localTime = utcTime.tz(localTimezone);
   return {
     utc: utcTime.format(format),
     local: localTime.format(format),
@@ -58,13 +58,14 @@ function getWeekOfYear(date?: string) {
 }
 
 function convertTime(sourceTimezone: string, targetTimezone: string, time?: string) {
-  const sourceTime = time ? dayjs(time).tz(sourceTimezone) : dayjs().tz(sourceTimezone);
+  const sourceTime = time ? dayjs.tz(time, sourceTimezone) : dayjs().tz(sourceTimezone);
   const targetTime = sourceTime.tz(targetTimezone);
   const formatString = 'YYYY-MM-DD HH:mm:ss';
+  const timeDiffMinutes = targetTime.utcOffset() - sourceTime.utcOffset();
   return {
     sourceTime: sourceTime.format(formatString),
     targetTime: targetTime.format(formatString),
-    timeDiff: dayjs(targetTime).diff(dayjs(sourceTime), 'hours'),
+    timeDiff: timeDiffMinutes / 60,
   };
 }
 
