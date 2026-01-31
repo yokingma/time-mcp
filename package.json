@@ -1,6 +1,6 @@
 {
   "name": "time-mcp",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "mcpName": "io.github.yokingma/time-mcp",
   "description": "Time MCP Server, giving LLMs time awareness capabilities.",
   "private": false,

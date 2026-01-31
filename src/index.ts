@@ -71,7 +71,7 @@ function convertTime(sourceTimezone: string, targetTimezone: string, time?: stri
 
 const server = new McpServer({
   name: 'time-mcp',
-  version: '0.0.1',
+  version: '1.0.6',
 }, {
   capabilities: {
     tools: {},
