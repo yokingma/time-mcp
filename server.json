@@ -6,13 +6,13 @@
     "url": "https://github.com/yokingma/time-mcp",
     "source": "github"
   },
-  "version": "1.0.5",
+  "version": "1.0.6",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "time-mcp",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "transport": {
         "type": "stdio"
       }
