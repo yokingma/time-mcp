@@ -73,7 +73,8 @@
     "typescript-eslint": "^7.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.7.0",
-    "dayjs": "^1.11.13"
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "dayjs": "^1.11.19",
+    "zod": "^4.3.6"
   }
 }

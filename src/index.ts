@@ -1,15 +1,22 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CURRENT_TIME, DAYS_IN_MONTH, GET_TIMESTAMP, RELATIVE_TIME, CONVERT_TIME, GET_WEEK_YEAR } from './tools.js';
-import relativeTime from 'dayjs/plugin/relativeTime.js';
-import utc from 'dayjs/plugin/utc.js';
-import timezone from 'dayjs/plugin/timezone.js';
-import weekOfYear from 'dayjs/plugin/weekOfYear.js';
-import isoWeek from 'dayjs/plugin/isoWeek.js';
 import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek.js';
+import relativeTime from 'dayjs/plugin/relativeTime.js';
+import timezone from 'dayjs/plugin/timezone.js';
+import utc from 'dayjs/plugin/utc.js';
+import weekOfYear from 'dayjs/plugin/weekOfYear.js';
+
+import {
+  CONVERT_TIME,
+  CURRENT_TIME,
+  DAYS_IN_MONTH,
+  GET_TIMESTAMP,
+  GET_WEEK_YEAR,
+  RELATIVE_TIME,
+} from './tools.js';
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -17,146 +24,7 @@ dayjs.extend(timezone);
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
 
-export const server = new Server({
-  name: 'time-mcp',
-  version: '0.0.1',
-}, {
-  capabilities: {
-    tools: {},
-    logging: {},
-  },
-});
-
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [CURRENT_TIME, RELATIVE_TIME, DAYS_IN_MONTH, GET_TIMESTAMP, CONVERT_TIME, GET_WEEK_YEAR],
-  };
-});
-
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-  try {
-    switch (name) {
-      case 'current_time': {
-        if (!checkCurrentTimeArgs(args)) {
-          throw new Error(`Invalid arguments for tool: [${name}]`);
-        }
-
-        const { format, timezone } = args;
-        const result = getCurrentTime(format, timezone);
-        return {
-          success: true,
-          content: [
-            {
-              type: 'text',
-              text: `Current UTC time is ${result.utc}, and the time in ${result.timezone} is ${result.local}.`,
-            },
-          ],
-        };
-      }
-      case 'relative_time': {
-        if (!checkRelativeTimeArgs(args)) {
-          throw new Error(`Invalid arguments for tool: [${name}]`);
-        }
-
-        const time = args.time;
-        const result = getRelativeTime(time);
-        return {
-          success: true,
-          content: [
-            {
-              type: 'text',
-              text: result,
-            },
-          ],
-        };
-      }
-      case 'days_in_month': {
-        if (!checkDaysInMonthArgs(args)) {
-          throw new Error(`Invalid arguments for tool: [${name}]`);
-        }
-
-        const date = args.date;
-        const result = getDaysInMonth(date);
-        return {
-          success: true,
-          content: [
-            {
-              type: 'text',
-              text: `The number of days in month is ${result}.`,
-            },
-          ],
-        };
-      }
-      case 'get_timestamp': {
-        if (!checkTimestampArgs(args)) {
-          throw new Error(`Invalid arguments for tool: [${name}]`);
-        }
-        const time = args.time;
-        const result = getTimestamp(time);
-        return {
-          success: true,
-          content: [
-            {
-              type: 'text',
-              text: time 
-                ? `The timestamp of ${time} (parsed as UTC) is ${result} ms.`
-                : `The current timestamp is ${result} ms.`,
-            },
-          ],
-        };
-      }
-      case 'convert_time': {
-        if (!checkConvertTimeArgs(args)) {
-          throw new Error(`Invalid arguments for tool: [${name}]`);
-        }
-        const { sourceTimezone, targetTimezone, time } = args;
-        const { sourceTime, targetTime, timeDiff } = convertTime(sourceTimezone, targetTimezone, time);
-        return {
-          success: true,
-          content: [
-            {
-              type: 'text',
-              text: `Current time in ${sourceTimezone} is ${sourceTime}, and the time in ${targetTimezone} is ${targetTime}. The time difference is ${timeDiff} hours.`,
-            },
-          ],
-        };
-      }
-      case 'get_week_year': {
-        if (!checkWeekOfYearArgs(args)) {
-          throw new Error(`Invalid arguments for tool: [${name}]`);
-        }
-        const { date } = args;
-        const { week, isoWeek } = getWeekOfYear(date);
-        return {
-          success: true,
-          content: [
-            {
-              type: 'text',
-              text: `The week of the year is ${week}, and the isoWeek of the year is ${isoWeek}.`,
-            },
-          ],
-        };
-      }
-      default: {
-        throw new Error(`Unknown tool: ${name}`);
-      }
-    }
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-
-    return {
-      success: false,
-      content: [
-        {
-          type: 'text',
-          text: message,
-        },
-      ],
-    };
-  }
-});
-
+// Helper functions
 function getCurrentTime(format: string, timezone?: string) {
   const utcTime = dayjs.utc();
   const localTimezone = timezone ?? dayjs.tz.guess();
@@ -181,7 +49,7 @@ function getDaysInMonth(date?: string) {
 }
 
 function getWeekOfYear(date?: string) {
-  const week =  date ? dayjs(date).week() : dayjs().week();
+  const week = date ? dayjs(date).week() : dayjs().week();
   const isoWeek = date ? dayjs(date).isoWeek() : dayjs().isoWeek();
   return {
     week,
@@ -200,72 +68,143 @@ function convertTime(sourceTimezone: string, targetTimezone: string, time?: stri
   };
 }
 
-function checkCurrentTimeArgs(args: unknown): args is { format: string, timezone?: string } {
-  return (
-    typeof args === 'object' &&
-    args !== null &&
-    'format' in args &&
-    typeof args.format === 'string' &&
-    ('timezone' in args ? typeof args.timezone === 'string' : true)
-  );
-}
+const server = new McpServer({
+  name: 'time-mcp',
+  version: '0.0.1',
+}, {
+  capabilities: {
+    tools: {},
+    logging: {},
+  },
+});
 
-function checkRelativeTimeArgs(args: unknown): args is { time: string } {
-  return (
-    typeof args === 'object' &&
-    args !== null &&
-    'time' in args &&
-    typeof args.time === 'string'
-  );
-}
+// Register current_time tool
+server.registerTool(
+  CURRENT_TIME.name,
+  {
+    description: CURRENT_TIME.description,
+    inputSchema: CURRENT_TIME.schema,
+  },
+  (args) => {
+    const result = getCurrentTime(args.format, args.timezone);
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: `Current UTC time is ${result.utc}, and the time in ${result.timezone} is ${result.local}.`,
+        },
+      ],
+    };
+  },
+);
 
-function checkDaysInMonthArgs(args: unknown): args is { date: string } {
-  return (
-    typeof args === 'object' &&
-    args !== null &&
-    'date' in args &&
-    typeof args.date === 'string'
-  );
-}
+// Register relative_time tool
+server.registerTool(
+  RELATIVE_TIME.name,
+  {
+    description: RELATIVE_TIME.description,
+    inputSchema: RELATIVE_TIME.schema,
+  },
+  (args) => {
+    const result = getRelativeTime(args.time);
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: result,
+        },
+      ],
+    };
+  },
+);
 
-function checkTimestampArgs(args: unknown): args is { time?: string } {
-  if (args === undefined || args === null) {
-    return true;
-  }
-  return (
-    typeof args === 'object' &&
-    (!('time' in (args as Record<string, unknown>)) || typeof (args as { time?: unknown }).time === 'string')
-  );
-}
+// Register days_in_month tool
+server.registerTool(
+  DAYS_IN_MONTH.name,
+  {
+    description: DAYS_IN_MONTH.description,
+    inputSchema: DAYS_IN_MONTH.schema,
+  },
+  (args) => {
+    const result = getDaysInMonth(args.date);
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: `The number of days in month is ${result}.`,
+        },
+      ],
+    };
+  },
+);
 
-function checkConvertTimeArgs(args: unknown): args is { sourceTimezone: string, targetTimezone: string, time: string } {
-  return (
-    typeof args === 'object' &&
-    args !== null &&
-    'sourceTimezone' in args &&
-    typeof args.sourceTimezone === 'string' &&
-    'targetTimezone' in args &&
-    typeof args.targetTimezone === 'string' &&
-    'time' in args &&
-    typeof args.time === 'string'
-  );
-}
+// Register get_timestamp tool
+server.registerTool(
+  GET_TIMESTAMP.name,
+  {
+    description: GET_TIMESTAMP.description,
+    inputSchema: GET_TIMESTAMP.schema,
+  },
+  (args) => {
+    const result = getTimestamp(args.time);
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: args.time
+            ? `The timestamp of ${args.time} (parsed as UTC) is ${result} ms.`
+            : `The current timestamp is ${result} ms.`,
+        },
+      ],
+    };
+  },
+);
 
-function checkWeekOfYearArgs(args: unknown): args is { date: string } {
-  return (
-    typeof args === 'object' &&
-    args !== null &&
-    ('date' in args ? typeof args.date === 'string' : true)
-  );
-}
+// Register convert_time tool
+server.registerTool(
+  CONVERT_TIME.name,
+  {
+    description: CONVERT_TIME.description,
+    inputSchema: CONVERT_TIME.schema,
+  },
+  (args) => {
+    const { sourceTime, targetTime, timeDiff } = convertTime(args.sourceTimezone, args.targetTimezone, args.time);
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: `Current time in ${args.sourceTimezone} is ${sourceTime}, and the time in ${args.targetTimezone} is ${targetTime}. The time difference is ${timeDiff} hours.`,
+        },
+      ],
+    };
+  },
+);
+
+// Register get_week_year tool
+server.registerTool(
+  GET_WEEK_YEAR.name,
+  {
+    description: GET_WEEK_YEAR.description,
+    inputSchema: GET_WEEK_YEAR.schema,
+  },
+  (args) => {
+    const { week, isoWeek } = getWeekOfYear(args.date);
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: `The week of the year is ${week}, and the isoWeek of the year is ${isoWeek}.`,
+        },
+      ],
+    };
+  },
+);
 
 async function runServer() {
   try {
-
     process.stdout.write('Starting Time MCP server...\n');
     const transport = new StdioServerTransport();
     await server.connect(transport);
-
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(`Error starting Time MCP server: ${message}\n`);
