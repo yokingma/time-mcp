@@ -37,6 +37,33 @@ npm install -g time-mcp
 npx -y time-mcp
 ```
 
+## Running on Claude Code
+
+To add time-mcp to Claude Code, use the following command:
+
+```bash
+claude mcp add time-mcp -- npx -y time-mcp
+```
+
+To verify the installation:
+
+```bash
+claude mcp list
+```
+
+You should see time-mcp listed with a ✓ Connected status.
+
+### Usage in Claude Code
+
+Once installed, you can use time-mcp tools in your conversations with Claude Code. For example:
+
+- "What time is it now?"
+- "Convert 2:00 PM from New York to Tokyo time"
+- "How many days are in this month?"
+- "What week of the year is it?"
+
+The time-mcp server will automatically provide accurate time information to Claude.
+
 ## Running on Cursor
 
 Your `mcp.json` file will look like this:
