@@ -14,10 +14,9 @@ export const CURRENT_TIME = {
       'MM/DD/YY',
       'YYYY/MM/DD',
       'YYYY/MM',
-    ]).describe('The format of the time').default('YYYY-MM-DD HH:mm:ss'),
+    ]).describe('The format of the time'),
     timezone: z.string()
       .describe('The timezone of the time, IANA timezone name, e.g. Asia/Shanghai')
-      .optional(),
   }),
 } as const;
 
@@ -36,7 +35,6 @@ export const DAYS_IN_MONTH = {
   schema: z.object({
     date: z.string()
       .describe('The date to get the days in month. Format: YYYY-MM-DD')
-      .optional(),
   }),
 } as const;
 
@@ -46,7 +44,6 @@ export const GET_TIMESTAMP = {
   schema: z.object({
     time: z.string()
       .describe('The time to get the timestamp. Format: YYYY-MM-DD HH:mm:ss.SSS')
-      .optional(),
   }),
 } as const;
 
@@ -69,6 +66,5 @@ export const GET_WEEK_YEAR = {
   schema: z.object({
     date: z.string()
       .describe('The date to get the week and isoWeek of the year. e.g. 2025-03-23')
-      .optional(),
   }),
 } as const;

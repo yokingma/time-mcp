@@ -87,7 +87,7 @@ server.registerTool(
     inputSchema: CURRENT_TIME.schema,
   },
   (args) => {
-    const result = getCurrentTime(args.format, args.timezone);
+    const result = getCurrentTime(args.format ?? 'YYYY-MM-DD HH:mm:ss', args.timezone ?? dayjs.tz.guess());
     return {
       content: [
         {
@@ -127,7 +127,7 @@ server.registerTool(
     inputSchema: DAYS_IN_MONTH.schema,
   },
   (args) => {
-    const result = getDaysInMonth(args.date);
+    const result = getDaysInMonth(args.date ?? undefined);
     return {
       content: [
         {
@@ -147,7 +147,7 @@ server.registerTool(
     inputSchema: GET_TIMESTAMP.schema,
   },
   (args) => {
-    const result = getTimestamp(args.time);
+    const result = getTimestamp(args.time ?? undefined);
     return {
       content: [
         {
@@ -189,7 +189,7 @@ server.registerTool(
     inputSchema: GET_WEEK_YEAR.schema,
   },
   (args) => {
-    const { week, isoWeek } = getWeekOfYear(args.date);
+    const { week, isoWeek } = getWeekOfYear(args.date ?? undefined);
     return {
       content: [
         {
